@@ -114,7 +114,7 @@ class Game(object):
                     self.ball.reset()
 
         if self.ball.checkVertColl():
-            self.sound.play()
+            self.collsound.play()
 
 
 def handlePlayerInput(game):
