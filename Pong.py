@@ -89,32 +89,35 @@ class Game(object):
         p2 = Paddle(WIDTH-20, Vector(20, 150))
         self.paddles = (p1, p2)
         self.scores = Vector(0, 0)
-        self.collsound = pygame.mixer.Sound("click.wav")
+        self.wall_sound = pygame.mixer.Sound("wall_hit.wav")
+        self.paddle_sound = pygame.mixer.Sound("paddle_hit.wav")
+        self.point_sound = pygame.mixer.Sound("point.wav")
 
     def update(self, delta):
         self.ball.incSpeed(delta)
         self.ball.move(delta)
 
-        self.collsound.stop()
         if self.ball.pos.x > WIDTH/2:
             if self.ball.checkRightColl(self.paddles[1]):
                 self.ball.doCollide(self.paddles[1])
-                self.collsound.play()
+                self.paddle_sound.play()
             else:
                 if self.ball.pos.x >= WIDTH:
                     self.scores.y += 1
+                    self.point_sound.play()
                     self.ball.reset()
         else:
             if self.ball.checkLeftColl(self.paddles[0]):
                 self.ball.doCollide(self.paddles[0])
-                self.collsound.play()
+                self.paddle_sound.play()
             else:
                 if self.ball.pos.x <= 0:
                     self.scores.x += 1
+                    self.point_sound.play()
                     self.ball.reset()
 
         if self.ball.checkVertColl():
-            self.collsound.play()
+            self.wall_sound.play()
 
 
 def handlePlayerInput(game):
