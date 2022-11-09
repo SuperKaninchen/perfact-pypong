@@ -16,10 +16,14 @@ class Ball(object):
     def reset(self):
         self.pos = Vector(WIDTH/2, HEIGHT/2)
         self.vel = Vector.random() * 25
+        self.speed = 25
 
     def move(self, delta):
-        self.vel = self.vel.setMagnitude(25)
+        self.vel = self.vel.setMagnitude(self.speed)
         self.pos += self.vel * delta / 100
+
+    def incSpeed(self, delta):
+        self.speed += delta / 1000
 
     def checkRightColl(self, paddle):
         if self.center().x+self.size > paddle.pos.x:
@@ -42,6 +46,8 @@ class Ball(object):
     def checkVertColl(self):
         if self.pos.y < 0 or self.pos.y+(self.size*2) > HEIGHT:
             self.vel.y *= -1
+            return True
+        return False
 
     def doCollide(self, paddle):
         #diff = paddle.center().y - self.pos.y
@@ -83,13 +89,17 @@ class Game(object):
         p2 = Paddle(WIDTH-20, Vector(20, 150))
         self.paddles = (p1, p2)
         self.scores = Vector(0, 0)
+        self.sound = pygame.mixer.Sound("pong2.wav")
 
     def update(self, delta):
+        self.ball.incSpeed(delta)
         self.ball.move(delta)
 
+        self.sound.stop()
         if self.ball.pos.x > WIDTH/2:
             if self.ball.checkRightColl(self.paddles[1]):
                 self.ball.doCollide(self.paddles[1])
+                self.sound.play()
             else:
                 if self.ball.pos.x >= WIDTH:
                     self.scores.y += 1
@@ -97,15 +107,17 @@ class Game(object):
         else:
             if self.ball.checkLeftColl(self.paddles[0]):
                 self.ball.doCollide(self.paddles[0])
+                self.sound.play()
             else:
                 if self.ball.pos.x <= 0:
                     self.scores.x += 1
                     self.ball.reset()
 
-        self.ball.checkVertColl()
+        if self.ball.checkVertColl():
+            self.sound.play()
 
 
-def handleKeypresses(game):
+def handlePlayerInput(game):
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_UP]:
         game.paddles[1].move(-1)
@@ -129,34 +141,47 @@ def show(screen, game, score):
 
 def main():
 
+    # Initialize pygame modules
     pygame.init()
+
+    # Set window title
     pygame.display.set_caption("pongCEED")
 
+    # Get display surface
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+    # Instantiate clock for delta
     clock = pygame.time.Clock()
 
+    # Initialize font object for rendering text
     font = pygame.font.Font(None, 32)
 
+    # Initialize Game object
     game = Game()
 
     running = True
-
     while running:
+        # Calculate delta and restrict fps to 60
         clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            # Key pressed
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     game = Game()
                 elif event.key == pygame.K_ESCAPE:
                     running = False
 
-        handleKeypresses(game)
 
+        handlePlayerInput(game)
+
+        # Time since last frame
         delta = clock.get_time()
+
+
         game.update(delta)
         score_surface = font.render(f"{game.scores.x} : {game.scores.y}", True, (255, 255, 255))
         show(screen, game, score_surface)
