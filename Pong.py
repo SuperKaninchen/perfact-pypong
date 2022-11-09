@@ -2,7 +2,7 @@ import sys, math, random, pygame
 from mpnUtils.Vector import Vector
 
 
-SIZE = WIDTH, HEIGHT = 800, 600
+SIZE = WIDTH, HEIGHT = 1366, 720
 
 
 class Ball(object):
